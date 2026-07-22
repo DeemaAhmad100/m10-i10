@@ -59,16 +59,22 @@ export default function RagPage() {
       {result && (
         <article>
           <p data-testid="rag-answer">{result.answer}</p>
-          <ul>
-            {result.citations.map((c) => (
-              <li key={c.chunk_id}>
-                [
-                <span data-testid="citation-marker">{c.chunk_id}</span>
-                ] score: {c.score.toFixed(3)}
-              </li>
-            ))}
-          </ul>
-          <p>Confidence: {result.confidence.toFixed(2)}</p>
+          {result.citations.length > 0 && (
+            <section>
+              <h3>Citations</h3>
+              <ul>
+                {result.citations.map((c) => (
+                  <li key={c.chunk_id} data-testid="citation-item">
+                    <span data-testid="citation-marker">[{c.chunk_id}]</span> — Confidence:{" "}
+                    {c.score.toFixed(3)}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+          <p>
+            <strong>Overall Confidence:</strong> {result.confidence.toFixed(2)}
+          </p>
         </article>
       )}
     </main>
