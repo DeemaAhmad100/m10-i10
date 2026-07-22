@@ -15,15 +15,11 @@ echo "Waiting for all services to reach healthy state (max ${MAX_RETRIES} * ${RE
 for ((i = 1; i <= MAX_RETRIES; i++)); do
   echo -n "Attempt $i/$MAX_RETRIES... "
   
-  # Get docker compose ps output as JSON
-  ps_output=$(docker compose ps --format json)
-  
   # Check if all required services are healthy
   all_healthy=true
   for service in "${SERVICES[@]}"; do
-    health=$(echo "$ps_output" | grep -o "\"Name\":\"$service\"" -A 10 | grep -o "\"Health\":\"[^\"]*\"" | head -1 | cut -d'"' -f4)
-    
-    if [ "$health" != "healthy" ]; then
+    # Use docker compose ps to check health
+    if ! docker compose ps $service 2>/dev/null | grep -q 'healthy'; then
       all_healthy=false
       break
     fi

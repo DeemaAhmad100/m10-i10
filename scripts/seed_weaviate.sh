@@ -8,15 +8,20 @@
 
 set -euo pipefail
 
+# Auto-load .env if present
+set -a
+[ -f .env ] && . ./.env
+set +a
+
 # Verify seed_weaviate.py exists
 if [ ! -f "api/seed_weaviate.py" ]; then
-  echo "Error: api/seed_weaviate.py not found"
+  echo "Error: api/seed_weaviate.py not found. Run this script from the repo root."
   exit 1
 fi
 
 # Verify seed_chunks.json exists
 if [ ! -f "api/seed_chunks.json" ]; then
-  echo "Error: api/seed_chunks.json not found"
+  echo "Error: api/seed_chunks.json not found. Run this script from the repo root."
   exit 1
 fi
 

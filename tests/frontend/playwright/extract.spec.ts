@@ -3,10 +3,8 @@
 // typed entity results from the api service.
 import { test, expect } from '@playwright/test';
 
-const API_URL = process.env.VITE_API_URL || 'http://localhost:3000';
-
 test('extract page renders and returns entities', async ({ page }) => {
-  await page.goto(`${API_URL}/extract`);
+  await page.goto('http://localhost:3000/extract');
   
   // Verify the page loaded with the title
   await expect(page.locator('h1')).toContainText('Extract — Named Entity Recognition');
@@ -33,8 +31,7 @@ test('extract page renders and returns entities', async ({ page }) => {
   
   // Verify first entity contains expected fields
   const firstEntity = entities.first();
-  await expect(firstEntity.locator('strong')).toBeVisible(); // text
+  await expect(firstEntity.locator('strong')).toBeVisible();
   const entityText = await firstEntity.textContent();
-  expect(entityText).toMatch(/\d+–\d+/); // should have start–end offsets
+  expect(entityText).toMatch(/\d+–\d+/);
 });
-

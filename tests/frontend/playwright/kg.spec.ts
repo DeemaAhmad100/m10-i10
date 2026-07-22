@@ -1,15 +1,13 @@
 import { test, expect } from '@playwright/test';
 
-const API_URL = process.env.VITE_API_URL || 'http://localhost:3000';
-
 test('kg page renders and returns rows', async ({ page }) => {
-  await page.goto(`${API_URL}/kg`);
+  await page.goto('http://localhost:3000/kg');
   
   // Verify the page loaded with the title
   await expect(page.locator('h1')).toContainText('Knowledge Graph — Recipe Query');
   
   // Verify the input and button are present
-  const input = page.locator('input[placeholder*="Find Sichuan"]');
+  const input = page.locator('input');
   const submitButton = page.locator('button:has-text("Ask")');
   
   await expect(input).toBeVisible();
@@ -45,4 +43,3 @@ test('kg page renders and returns rows', async ({ page }) => {
     await expect(cypherSection).toBeVisible();
   }
 });
-

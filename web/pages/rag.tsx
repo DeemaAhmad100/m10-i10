@@ -39,6 +39,33 @@ export default function RagPage() {
     }
   }
 
+  // Helper function to render answer text with inline citation markers
+  function renderAnswerWithCitations() {
+    if (!result) return null;
+    
+    // Split answer by citation pattern [N] and render with styled markers
+    const parts = result.answer.split(/\[(\d+)\]/);
+    const elements = [];
+    
+    for (let i = 0; i < parts.length; i++) {
+      if (i % 2 === 0) {
+        // Regular text
+        if (parts[i]) elements.push(parts[i]);
+      } else {
+        // Citation number
+        const citationNum = parseInt(parts[i], 10);
+        const citation = result.citations.find(c => c.chunk_id === citationNum);
+        elements.push(
+          <span key={`citation-${i}`} data-testid="citation-marker" style={{ fontWeight: 'bold', color: '#0066cc' }}>
+            [{citationNum}]
+          </span>
+        );
+      }
+    }
+    
+    return elements;
+  }
+
   return (
     <main>
       <h1>RAG — Cited Answer</h1>
@@ -58,7 +85,7 @@ export default function RagPage() {
       )}
       {result && (
         <article>
-          <p data-testid="rag-answer">{result.answer}</p>
+          <p data-testid="rag-answer">{renderAnswerWithCitations()}</p>
           {result.citations.length > 0 && (
             <section>
               <h3>Citations</h3>

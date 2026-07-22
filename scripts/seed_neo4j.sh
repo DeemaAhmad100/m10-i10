@@ -8,20 +8,18 @@
 
 set -euo pipefail
 
-# Verify required env vars
-if [ -z "${NEO4J_USER:-}" ]; then
-  echo "Error: NEO4J_USER not set. Load .env first: source .env"
-  exit 1
-fi
+# Auto-load .env if present, so the caller does not need to `source .env`
+# manually before running this script.
+set -a
+[ -f .env ] && . ./.env
+set +a
 
-if [ -z "${NEO4J_PASSWORD:-}" ]; then
-  echo "Error: NEO4J_PASSWORD not set. Load .env first: source .env"
-  exit 1
-fi
+NEO4J_USER="${NEO4J_USER:-neo4j}"
+NEO4J_PASSWORD="${NEO4J_PASSWORD:-devpassword}"
 
 # Verify seed.cypher exists
 if [ ! -f "api/seed.cypher" ]; then
-  echo "Error: api/seed.cypher not found"
+  echo "Error: api/seed.cypher not found. Run this script from the repo root."
   exit 1
 fi
 

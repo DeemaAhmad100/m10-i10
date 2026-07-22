@@ -19,31 +19,25 @@ review convention and the contract-change protocol.
 ## Starter Layout
 
 ```
-api/                      Pre-implemented FastAPI backend (do not modify
-                          unless extending; the Backend lead extends here)
+api/                      Pre-implemented FastAPI backend
 web/                      Pre-implemented Next.js frontend
-docker-compose.yml        Skeleton — Infra-Integration lead authors
+docker-compose.yml        Compose stack configuration
 scripts/
-  seed_neo4j.sh           Stub — Infra-Integration lead authors
-  seed_weaviate.sh        Stub — Infra-Integration lead authors
-  healthcheck_stack.sh    Stub — Infra-Integration lead authors
-.env.example              Placeholder credentials
+  seed_neo4j.sh           Neo4j seeding script
+  seed_weaviate.sh        Weaviate seeding script
+  healthcheck_stack.sh    Stack health polling
+.env.example              Environment template
 ```
 
-## Quick Start
-
-### Prerequisites
-
-- Docker and Docker Compose installed and running.
-- `.env` file created from `.env.example` with `NEO4J_PASSWORD` filled in.
+## Quick Start — 8 Steps
 
 ### 1. Clone and Setup
 
 ```bash
-git clone https://github.com/<team-fork-owner>/m10-i10-team-N.git
+git clone https://github.com/<team-fork>/m10-i10-team-N.git
 cd m10-i10-team-N
 cp .env.example .env
-# Edit .env and set a strong NEO4J_PASSWORD (e.g., 'password' for local dev)
+# Edit .env and set NEO4J_PASSWORD (e.g., 'password123' for local dev)
 ```
 
 ### 2. Build and Start the Stack
@@ -52,71 +46,37 @@ cp .env.example .env
 docker compose up -d --build
 ```
 
-This command:
-- Builds the `api` service (FastAPI with Neo4j + Weaviate + spaCy + flan-t5-base)
-- Builds the `web` service (Next.js with TypeScript)
-- Pulls and starts the `neo4j` service (Neo4j 5 Community)
-- Pulls and starts the `weaviate` service (Weaviate 1.24.10)
-- Wires service-name DNS, volumes, healthchecks, and ordering constraints
+This builds and starts all 4 services:
+- **api** (FastAPI on :8000)
+- **web** (Next.js on :3000)
+- **neo4j** (Neo4j on :7687 Bolt, :7474 HTTP)
+- **weaviate** (Weaviate on :8080)
 
-### 3. Verify All Services Are Healthy
+### 3. Verify Services Are Healthy
 
 ```bash
 docker compose ps
+# OR: bash scripts/healthcheck_stack.sh
 ```
 
-Expected output — all services show `healthy` under the `Status` column:
+Expected: All 4 services show `healthy` status.
 
-```
-NAME        IMAGE                                  COMMAND                 SERVICE     STATUS
-neo4j       neo4j:5-community                      "tini -g -- /startup…" neo4j       running (healthy)
-weaviate    semitechnologies/weaviate:1.24.10      "/bin/weaviate --… "   weaviate    running (healthy)
-api         m10-i10-team-N-api:latest              "uvicorn api.main:a…" api         running (healthy)
-web         m10-i10-team-N-web:latest              "node server.js"       web         running (healthy)
-```
-
-Or use the built-in healthcheck script:
-
-```bash
-bash scripts/healthcheck_stack.sh
-```
-
-### 4. Seed the Neo4j Graph Database
+### 4. Seed Neo4j Graph Database
 
 ```bash
 bash scripts/seed_neo4j.sh
 ```
 
-This runs the Cypher fixture from `api/seed.cypher` inside the `neo4j` container.
-The script is idempotent — re-running does not duplicate nodes.
+Loads recipe graph from `api/seed.cypher` (idempotent).
 
-Expected output:
-
-```
-Seeding Neo4j with recipe fixture...
-(remaining output)
-✓ Neo4j seeded successfully
-```
-
-### 5. Seed the Weaviate Vector Index
+### 5. Seed Weaviate Vector Index
 
 ```bash
 bash scripts/seed_weaviate.sh
 ```
 
-This runs `api/seed_weaviate.py` inside the `api` container.
-The seeder embeds the chunks from `api/seed_chunks.json` using `sentence-transformers` 
-and inserts them into Weaviate.
-
-Expected runtime: ~10–45 seconds depending on whether embeddings are pre-cached.
-
-Expected output:
-
-```
-Seeding Weaviate with chunked-docs fixture...
-(embedding progress)
-✓ Weaviate seeded successfully
-```
+Embeds chunks from `api/seed_chunks.json` and inserts into Weaviate (idempotent).
+Expected runtime: ~10–45 seconds.
 
 ### 6. Test the Backend API
 
@@ -126,148 +86,87 @@ curl -X POST http://localhost:8000/rag/answer \
   -d '{"question": "How do I prep ginger for stir-fry?"}'
 ```
 
-Expected response — HTTP 200 with a grounded cited answer:
+Expected: HTTP 200 with `answer`, `citations`, `confidence`.
 
-```json
-{
-  "answer": "To prep ginger for stir-fry, ...",
-  "citations": [
-    { "chunk_id": 42, "score": 0.87 },
-    { "chunk_id": 53, "score": 0.81 }
-  ],
-  "confidence": 0.84
-}
-```
+### 7. Open Frontend in Browser
 
-### 7. Test the Frontend in the Browser
+Open **http://localhost:3000/rag** and submit the seeded question.
 
-Open http://localhost:3000/rag in your browser.
+Expected: Cited answer renders with inline `[1]`, `[2]` citation markers.
 
-- Type or paste the seeded question: "How do I prep ginger for stir-fry?"
-- Click "Submit"
-- Observe a cited answer rendered with inline `[1]`, `[2]` citation markers
-- Hover/click citations to see the backing text and confidence score
-
-### 8. Tear Down (Cleanup)
+### 8. Cleanup
 
 ```bash
 docker compose down -v
 ```
 
-The `-v` flag removes the named volumes (`neo4j_data`, `weaviate_data`),
-ensuring a fresh state on the next `docker compose up`.
+The `-v` flag removes volumes for a fresh start next time.
 
-## Service URLs (from Host)
+---
 
-- **FastAPI** http://localhost:8000
-  - Docs: http://localhost:8000/docs
-  - OpenAPI schema: http://localhost:8000/openapi.json
-  - Health: http://localhost:8000/healthz
-  - Readiness: http://localhost:8000/readyz
-- **Next.js** http://localhost:3000
-  - `/extract` — entity extraction
-  - `/kg` — knowledge graph query
-  - `/rag` — RAG answer (main demo)
-- **Neo4j** http://localhost:7474 (browser) or `bolt://localhost:7687` (driver)
-- **Weaviate** http://localhost:8080
+## Service URLs
 
-## Service URLs (from Containers)
+| Service | Host URL | Container URL | Port |
+|---------|----------|---------------|------|
+| Next.js | http://localhost:3000 | http://web:3000 | 3000 |
+| FastAPI | http://localhost:8000 | http://api:8000 | 8000 |
+| Neo4j Bolt | bolt://localhost:7687 | bolt://neo4j:7687 | 7687 |
+| Neo4j HTTP | http://localhost:7474 | http://neo4j:7474 | 7474 |
+| Weaviate | http://localhost:8080 | http://weaviate:8080 | 8080 |
 
-- **FastAPI**: `http://api:8000`
-- **Neo4j Bolt**: `bolt://neo4j:7687`
-- **Weaviate**: `http://weaviate:8080`
+---
 
 ## Environment Variables
 
-| Variable | Service(s) | Purpose |
-| --- | --- | --- |
-| `NEO4J_USER` | `neo4j` (healthcheck), `api` | Neo4j username (default: `neo4j`) |
-| `NEO4J_PASSWORD` | `neo4j` (auth), `api` (driver), seed scripts | Neo4j password |
-| `NEO4J_URI` | `api` | Neo4j Bolt URI (default: `bolt://neo4j:7687`) |
-| `WEAVIATE_URL` | `api` | Weaviate HTTP endpoint (default: `http://weaviate:8080`) |
-| `WEB_ORIGIN` | `api` (CORS) | Frontend origin for CORS (default: `http://localhost:3000`) |
-| `NEXT_PUBLIC_API_URL` | `web` (build arg) | Backend API URL baked into the Next.js bundle (default: `http://localhost:8000`) |
+| Variable | Purpose |
+|----------|---------|
+| `NEO4J_USER` | Neo4j username (default: neo4j) |
+| `NEO4J_PASSWORD` | Neo4j password (required) |
+| `NEO4J_URI` | Neo4j Bolt endpoint (container: bolt://neo4j:7687) |
+| `WEAVIATE_URL` | Weaviate HTTP endpoint (container: http://weaviate:8080) |
+| `WEB_ORIGIN` | Frontend origin for CORS (default: http://localhost:3000) |
+| `NEXT_PUBLIC_API_URL` | Backend API URL for Next.js (build arg: http://localhost:8000) |
 
-## Idempotency
-
-All seed scripts are idempotent:
-
-- `seed_neo4j.sh` uses `MERGE` and `CREATE CONSTRAINT IF NOT EXISTS` in Cypher.
-- `seed_weaviate.sh` checks for existing `chunk_id` before inserting.
-
-Re-running either script multiple times produces the same end state without duplication.
+---
 
 ## Troubleshooting
 
-### Services not reaching `healthy` state
+### Services not reaching healthy
 
-1. Check logs: `docker compose logs <service-name>`
-   - Example: `docker compose logs api` (watch for HuggingFace downloads on first run)
-2. Verify `.env` is loaded: `docker compose config | grep NEO4J_PASSWORD`
-3. Verify port availability: `lsof -i :8000` (8000, 3000, 7687, 8080 must be free)
+```bash
+docker compose logs api
+# Check for HuggingFace downloads on first run (spaCy, flan-t5-base, sentence-transformers)
+```
 
 ### Seed scripts fail
 
-1. Verify the stack is running: `docker compose ps`
-2. Verify all services are `healthy` (not just `running`)
-3. Verify `.env` is in the repo root and has `NEO4J_PASSWORD` set
-4. Run seed scripts from the repo root (the directory containing `docker-compose.yml`)
+- Verify stack is running: `docker compose ps`
+- Verify all services are `healthy`
+- Run from repo root (where `docker-compose.yml` is)
 
-### CORS errors in the browser
+### CORS errors in browser
 
-- Verify `WEB_ORIGIN=http://localhost:3000` in `.env`
-- Verify the api `environment:` in `docker-compose.yml` has `WEB_ORIGIN=${WEB_ORIGIN}`
-- Restart the api service: `docker compose restart api`
+- Check `WEB_ORIGIN=http://localhost:3000` in `.env`
+- Restart api: `docker compose restart api`
 
-### Weaviate insert silently fails
+### Weaviate insert fails silently
 
-- Verify `DEFAULT_VECTORIZER_MODULE=none` in the `weaviate` service environment
-- Verify embeddings are external (from `sentence-transformers`) — no internal vectorization
+- Verify `DEFAULT_VECTORIZER_MODULE=none` in `docker-compose.yml`
+- Verify embeddings are external (via `seed_weaviate.py`)
 
-## Development Notes
+---
 
-### Adding a New Endpoint
+## For the Team
 
-1. **Backend lead** adds the route in `api/main.py` and the shape in `api/models.py`.
-2. **Backend lead** announces the OpenAPI shape on the team Slack channel (contract change).
-3. **Frontend lead** updates `web/lib/types.ts` to match the new shape.
-4. **Frontend lead** adds the typed fetch call in the corresponding page.
-5. Both merge to their respective branches via internal PRs reviewed by the other role.
-
-### Memory and Performance
-
-- Neo4j heap: 1 GB (configurable in `docker-compose.yml` via `NEO4J_dbms_memory_heap_max__size`)
-- Weaviate data: persisted in named volume `weaviate_data` (survives `docker compose down`)
-- API cold start: ~1–5 min on first boot (downloads HuggingFace models; subsequent starts are <1s)
-
-### CI/CD
-
-The autograder runs two workflows:
-
-1. **Structural** — validates `docker-compose.yml` topology, `.env.example`, `TEAM.md`, `CONTRIBUTING.md`, Playwright specs
-2. **Stack** — brings up the full stack, runs seed scripts, curls the RAG endpoint, runs Playwright headless, verifies idempotency
-
-Both must pass for the team submission to receive full credit.
-TEAM.md                   Team roster — team fills in
-CONTRIBUTING.md           Branch convention + internal-PR protocol
-```
-
-## Bring up the stack (runbook — Infra-Integration lead drafts this)
-
-```bash
-cp .env.example .env  # edit values; never commit .env
-
-docker compose up -d --build
-bash scripts/healthcheck_stack.sh
-bash scripts/seed_neo4j.sh
-bash scripts/seed_weaviate.sh
-
-# Demo curl
-curl -s -X POST http://localhost:8000/rag/answer \
-  -H 'Content-Type: application/json' \
-  -d '{"question": "How do I prep ginger for stir-fry?"}' | jq .
-
-# Open the web UI at http://localhost:3000/rag
+- Each Team Member confirms `docker compose up -d` works locally
+- All three role branches merge to `main` via internal PRs with peer review
+- Team submission includes:
+  - `docker compose ps` output (all healthy)
+  - Seed scripts output
+  - Demo curl response with citations
+  - Screenshot of Next.js `/rag` page with cited answer
+  - `TEAM.md` roster
+  - Per-role contribution summary
 ```
 
 ## Submission
