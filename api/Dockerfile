@@ -13,7 +13,9 @@ WORKDIR /app
 COPY api/requirements.txt /app/requirements.txt
 # Generous timeout + retries for transient PyPI mirror flakes on first-pull
 # large wheels (torch, transformers, sentence-transformers, ~2GB total).
-RUN pip install --no-cache-dir --timeout 300 --retries 5 -r /app/requirements.txt
+# Install torch from PyTorch CPU index to avoid CUDA dependency download failures.
+RUN pip install --no-cache-dir --timeout 300 --retries 5 \
+    --extra-index-url https://download.pytorch.org/whl/cpu -r /app/requirements.txt
 # Pin the spaCy model tarball directly. `python -m spacy download` queries
 # the compatibility table and constructs a release URL; for some spaCy/pip
 # combinations the resolver emits a malformed URL with an empty version

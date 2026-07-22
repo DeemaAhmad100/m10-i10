@@ -16,8 +16,8 @@ test('extract page renders and returns entities', async ({ page }) => {
   await expect(textarea).toBeVisible();
   await expect(submitButton).toBeVisible();
   
-  // Submit with sample text
-  const sampleText = "Ginger is a root used in cooking. Add it to stir-fry dishes.";
+  // Submit with sample text (must contain recognized named entities for spacy)
+  const sampleText = "John Smith works at Apple in New York. He loves cooking with Chef Gordon Ramsay.";
   await textarea.fill(sampleText);
   await submitButton.click();
   
