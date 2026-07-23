@@ -232,6 +232,11 @@ Running 7 tests using 4 workers
 ## ✅ Commit History
 
 ```
+1c1ede8 fix: add requests dependency and install it in GitHub Actions
+  - api/requirements.txt: Add requests==2.31.0 for HTTP client support
+  - .github/workflows/...: Install requests in structural test job
+  - Fixes CI/CD failure: ModuleNotFoundError: No module named 'requests'
+
 963d954 fix: update test data and Dockerfile for successful stack startup
   - api/Dockerfile: Use --extra-index-url for PyTorch CPU wheels (fixes CUDA SSL errors)
   - web/tests/extract.spec.ts: Use NER-friendly text with recognized named entities
