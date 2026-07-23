@@ -8,10 +8,10 @@ This file is the team roster artifact for the Module 10 four-service Docker Comp
 
 ## Team Identity
 
-- **Team name:** _(team-chosen identifier — e.g., `team-aurora`)_
-- **Team Slack channel:** _(cohort Slack channel — e.g., `#m10-team-aurora`)_
-- **Team-formation date:** _(YYYY-MM-DD — the date the instructional team posted the roster)_
-- **Designated team submitter:** _(role token — typically `Infra-Integration lead`)_
+- **Team name:** `m10-i10-full-stack-integration`
+- **Team Slack channel:** `#m10-integration-solo`
+- **Team-formation date:** `2026-07-23`
+- **Designated team submitter:** `Infra-Integration lead` (DA)
 
 ---
 
@@ -19,9 +19,9 @@ This file is the team roster artifact for the Module 10 four-service Docker Comp
 
 | Role | Team Member identifier | Assigned by | Branch | Internal-PR reviewer | Primary files owned |
 |---|---|---|---|---|---|
-| Backend lead | _(initials or anon ID)_ | Instructional team | `backend/api-endpoints` | Frontend lead | `api/main.py`, `api/models.py`, `api/rag.py`, `api/deps.py`, `api/Dockerfile` |
-| Frontend lead | _(initials or anon ID)_ | Instructional team | `frontend/nextjs-pages` | Backend lead | `web/pages/{extract,kg,rag}.tsx`, `web/lib/types.ts`, `web/Dockerfile`, `tests/frontend/playwright/*` |
-| Infra-Integration lead | _(initials or anon ID)_ | Instructional team | `infra/docker-compose` | Backend lead | `docker-compose.yml`, `seed_neo4j.sh`, `seed_weaviate.sh`, `.env.example`, `README.md`, `tests/integration/*` |
+| Backend lead | `DA` (solo) | Self-directed | `backend/api-endpoints` | Infra-Integration lead (self) | `api/main.py`, `api/models.py`, `api/rag.py`, `api/deps.py`, `api/Dockerfile` |
+| Frontend lead | `DA` (solo) | Self-directed | `frontend/nextjs-pages` | Backend lead (self) | `web/pages/{extract,kg,rag}.tsx`, `web/lib/types.ts`, `web/Dockerfile`, `tests/frontend/playwright/*` |
+| Infra-Integration lead | `DA` (solo) | Self-directed | `infra/docker-compose` | Backend lead (self) | `docker-compose.yml`, `seed_neo4j.sh`, `seed_weaviate.sh`, `.env.example`, `README.md`, `tests/integration/*` |
 
 **Fallback compositions for non-3-Team-Member teams:**
 
@@ -34,31 +34,31 @@ This file is the team roster artifact for the Module 10 four-service Docker Comp
 
 The TA cross-references this checklist against `git log --author=<email>` on the team fork during per-role grading. Check the box when the Team Member confirms they authored the file.
 
-### Backend lead
+### Backend lead (DA)
 
-- [ ] `api/main.py` — path operations, `lifespan`, CORS middleware
-- [ ] `api/models.py` — Pydantic shapes
-- [ ] `api/rag.py` — RAG composer with grounding contract
-- [ ] `api/deps.py` — `Depends()` functions
-- [ ] `api/Dockerfile` — single-stage Python
+- [x] `api/main.py` — path operations, `lifespan`, CORS middleware
+- [x] `api/models.py` — Pydantic shapes
+- [x] `api/rag.py` — RAG composer with grounding contract
+- [x] `api/deps.py` — `Depends()` functions
+- [x] `api/Dockerfile` — single-stage Python (CPU-optimized with --extra-index-url)
 
-### Frontend lead
+### Frontend lead (DA)
 
-- [ ] `web/pages/extract.tsx`
-- [ ] `web/pages/kg.tsx`
-- [ ] `web/pages/rag.tsx`
-- [ ] `web/lib/types.ts` — three TypeScript interfaces mirroring Pydantic
-- [ ] `web/Dockerfile` — multi-stage Node
-- [ ] `tests/frontend/playwright/*.spec.ts` — one per page
+- [x] `web/pages/extract.tsx`
+- [x] `web/pages/kg.tsx`
+- [x] `web/pages/rag.tsx` (with inline citation rendering)
+- [x] `web/lib/types.ts` — six TypeScript interfaces mirroring Pydantic
+- [x] `web/Dockerfile` — multi-stage Node.js
+- [x] `tests/frontend/playwright/*.spec.ts` — three smoke tests (extract, kg, rag)
 
-### Infra-Integration lead
+### Infra-Integration lead (DA)
 
-- [ ] `docker-compose.yml` — four services, healthchecks, `depends_on` chain, named volumes
-- [ ] `seed_neo4j.sh`
-- [ ] `seed_weaviate.sh`
-- [ ] `.env.example` (no real credentials)
-- [ ] `README.md` runbook
-- [ ] `tests/integration/test_stack_e2e.py`
+- [x] `docker-compose.yml` — four services (api, web, neo4j, weaviate), healthchecks, `depends_on` chain, named volumes
+- [x] `seed_neo4j.sh` — idempotent cypher-shell seeding
+- [x] `seed_weaviate.sh` — idempotent Python seeding script
+- [x] `.env.example` (no real credentials, requires .env at runtime)
+- [x] `README.md` runbook with 8-step quick-start
+- [x] `tests/integration/test_stack_e2e.py` — E2E harness
 
 ---
 

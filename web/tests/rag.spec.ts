@@ -1,9 +1,7 @@
 import { test, expect } from '@playwright/test';
 
-const API_URL = process.env.VITE_API_URL || 'http://localhost:3000';
-
 test('rag page renders cited answer with citation markers', async ({ page }) => {
-  await page.goto(`${API_URL}/rag`);
+  await page.goto('http://localhost:3000/rag');
   
   // Verify the page loaded with the title
   await expect(page.locator('h1')).toContainText('RAG — Cited Answer');
@@ -50,4 +48,3 @@ test('rag page renders cited answer with citation markers', async ({ page }) => 
   const confidenceText = page.locator('text=Overall Confidence');
   await expect(confidenceText).toBeVisible();
 });
-

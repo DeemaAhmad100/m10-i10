@@ -13,8 +13,8 @@ test('kg page renders and returns rows', async ({ page }) => {
   await expect(input).toBeVisible();
   await expect(submitButton).toBeVisible();
   
-  // Submit a valid query
-  const sampleQuestion = "Find Sichuan recipes";
+  // Submit a valid query (must follow one of the supported patterns from api)
+  const sampleQuestion = "Find Italian recipes";
   await input.fill(sampleQuestion);
   await submitButton.click();
   
